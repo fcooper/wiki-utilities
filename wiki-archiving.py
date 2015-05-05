@@ -21,8 +21,10 @@ WIKI_URL = "http://"+WIKI_DOMAINNAME+"/index.php/"
 ARCHIVE_SDK_NAME = "Sitara Linux SDK 08.00.00.00"
 TEMPLATE_WIKI_PAGE = "Template:ArchiveLinks-AMSDKv08.00"
 
+os.environ['no_proxy'] = '*.ti.com'
 
-
+# Add Proxy. Fill out below line and uncomment
+# os.environ['http_proxy'] =
 
 site = mwclient.Site(('http',WIKI_DOMAINNAME),path='/')
 
@@ -213,6 +215,7 @@ def switchImagesToArchiveImages(page,pageText):
 		else:
 			name = image.name[6:]
 
+		normalized_name = normalize_title(name)
 		basename = name.rsplit(".",1)[0]
 		ext = name.rsplit(".",1)[1]
 
@@ -231,11 +234,14 @@ def switchImagesToArchiveImages(page,pageText):
 
 
 
+		#print saveimage
 
 		if site.Images[saveimage].imageinfo.get('size',None) is None:
 
+
 			imagedir = "/home/franklin/repositories/git/wiki-utilities/images/"
 			if os.path.isfile(saveimage) is False:
+
 				urllib.urlretrieve (imageinfo['url'], imagedir+saveimage)
 
 			description = ARCHIVE_SDK_NAME+" archived image"
@@ -245,16 +251,23 @@ def switchImagesToArchiveImages(page,pageText):
 				print "Upload successful"
 			else:
 				print "Upload failed"
-
 		#else:
 		#	print "Already uploaded"
 
-
 		matches = filter(lambda x: name in x, imageStr);
-		matches = matches + filter(lambda x: normalize_title(name) in x, imageStr);
+		matches = matches + filter(lambda x: (name[0].lower() + name[1:]) in x, imageStr);
+		matches = matches + filter(lambda x: normalized_name in x, imageStr);
+		matches = matches + filter(lambda x: (normalized_name[0].lower() + normalized_name[1:]) in x, imageStr);
 
 		for match in matches:
-			newStr = match.replace(name,saveimage,1)
+			if name in match:
+				newStr = match.replace(name,saveimage,1)
+			elif normalized_name in match:
+				newStr = match.replace(normalized_name,saveimage,1)
+			elif (name[0].lower() + name[1:]) in match:
+				newStr = match.replace((name[0].lower() + name[1:]),saveimage,1)
+			elif (normalized_name[0].lower() + normalized_name[1:]) in match:
+				newStr = match.replace((normalized_name[0].lower() + normalized_name[1:]),saveimage,1)
 			switchText = switchText.replace(match,newStr)
 
 
@@ -415,7 +428,3 @@ while True is True:
 
 	f.flush()
 	f.close()
-
-
-
-
