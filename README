@@ -1,0 +1,38 @@
+If you internet question requires a proxy then you need to set both the http_proxy and
+https_proxy
+
+export http_proxy=<proxy>:<port>
+export https_proxy=<proxy>:<port>
+
+First you need to install python's version of apt-get called pip
+apt-get install python-pip
+
+After pip is installed you will then need to download the following packages via pip.
+Sudo isn't required.
+
+pip install --user mwclient
+pip install --user simplejson
+pip install --user logger
+pip install --user configparser
+
+Configuration File
+
+Create a file in the same directory of the script with the following contents.
+The values should be based on the name of the SDK that your archiving. So if the wiki
+is currently based on SDK 8 and you want to archive it so you can update the wiki for SDK 9
+then the below values will be based on SDK 8
+
+[DEFAULT]
+
+SDKFullName = <Full name of SDK>
+AbbreviatedSDKName = <abbreviated SDK name>
+SDKVersion = <sdk version>
+
+
+Below is an example of what would be used if your archiving SDK 8.0
+
+[DEFAULT]
+
+SDKFullName = Sitara Linux SDK
+AbbreviatedSDKName = AMSDK
+SDKVersion = 08.00.00.00
