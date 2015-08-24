@@ -2,6 +2,7 @@
 # encoding=utf-8
 
 # Initialize Site object
+import configparser
 import mwclient
 import os
 import re
@@ -13,13 +14,14 @@ import os.path
 import collections
 from sys import stdin
 import getpass
+config = configparser.ConfigParser()
 
 WikiLink = collections.namedtuple('WikiLink', 'url altname anchor latestrevid wikisyntax')
 
 WIKI_DOMAINNAME = "processors.wiki.ti.com"
 WIKI_URL = "http://"+WIKI_DOMAINNAME+"/index.php/"
-ARCHIVE_SDK_NAME = "Sitara Linux SDK 08.00.00.00"
-TEMPLATE_WIKI_PAGE = "Template:ArchiveLinks-AMSDKv08.00"
+#ARCHIVE_SDK_NAME = "Sitara Linux SDK 08.00.00.00"
+#TEMPLATE_WIKI_PAGE = "Template:ArchiveLinks-AMSDKv08.00"
 
 os.environ['no_proxy'] = '*.ti.com'
 
@@ -28,6 +30,39 @@ os.environ['no_proxy'] = '*.ti.com'
 
 site = mwclient.Site(('http',WIKI_DOMAINNAME),path='/')
 
+
+if not os.path.exists("modified.txt"):
+    open("modified.txt","w").close()
+
+try:
+    os.makedirs("images")
+except OSError:
+    if not os.path.isdir("images"):
+        raise
+
+
+print ("Enter Archive Config File Name:"),
+configfile = stdin.readline().strip()
+
+
+if not os.path.exists(configfile):
+    print "Config file "+configfile+" does not exist."
+    exit(1)
+else:
+    config.read(configfile)
+
+try:
+
+    ARCHIVE_SDK_NAME = config["DEFAULT"]["SDKFullName"] + " "+config["DEFAULT"]["SDKVersion"]
+    ARCHIVE_SDK_NAME = ARCHIVE_SDK_NAME.strip()
+    TEMPLATE_WIKI_PAGE = "Template:ArchiveLinks-"+config["DEFAULT"]["AbbreviatedSDKName"]+"v"+config["DEFAULT"]["SDKVersion"]
+    TEMPLATE_WIKI_PAGE = TEMPLATE_WIKI_PAGE.strip()
+except KeyError:
+    print "Got a key error"
+    exit(1)
+
+print "Archived SDK Name: "+ARCHIVE_SDK_NAME
+print "Template Wiki Page: "+TEMPLATE_WIKI_PAGE
 
 def normalize_title(title):
 	# TODO: Make site dependent
